@@ -94,18 +94,36 @@ class _RegisterEmailSectionState extends State<RegisterEmailSection> {
   void _register() async {
     try {
       await widget.auth.createUserWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
       setState(() {
         _success = true;
         _userEmail = _emailController.text;
         _initialState = false;
       });
+    } on FirebaseAuthException catch (e) {
+      String errorMsg;
+      if (e.code == 'invalid-email') {
+        errorMsg = 'Please enter a valid email address (e.g., test@gmail.com).';
+      } else if (e.code == 'weak-password') {
+        errorMsg = 'Password should be at least 6 characters long.';
+      } else if (e.code == 'email-already-in-use') {
+        errorMsg = 'This email is already registered. Try signing in instead.';
+      } else {
+        errorMsg = 'Registration failed: ${e.message}';
+      }
+
+      setState(() {
+        _success = false;
+        _initialState = false;
+        _userEmail = errorMsg;
+      });
     } catch (e) {
       setState(() {
         _success = false;
         _initialState = false;
+        _userEmail = 'An unexpected error occurred. Please try again.';
       });
     }
   }
@@ -156,7 +174,7 @@ class _RegisterEmailSectionState extends State<RegisterEmailSection> {
                   ? 'Please Register'
                   : _success
                   ? 'Successfully registered $_userEmail'
-                  : 'Registration failed',
+                  : _userEmail ?? 'Registration failed',
               style: TextStyle(color: _success ? Colors.green : Colors.red),
             ),
           ),
@@ -184,23 +202,45 @@ class _EmailPasswordFormState extends State<EmailPasswordForm> {
     try {
       UserCredential userCredential = await widget.auth
           .signInWithEmailAndPassword(
-            email: _emailController.text,
-            password: _passwordController.text,
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
           );
+
       setState(() {
         _success = true;
         _userEmail = _emailController.text;
         _initialState = false;
       });
+
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => ProfileScreen(user: userCredential.user!),
         ),
       );
+    } on FirebaseAuthException catch (e) {
+      String errorMsg;
+      if (e.code == 'invalid-email') {
+        errorMsg = 'Please enter a valid email address (e.g., test@gmail.com).';
+      } else if (e.code == 'user-not-found') {
+        errorMsg = 'No account found for this email.';
+      } else if (e.code == 'wrong-password') {
+        errorMsg = 'Incorrect password. Please try again.';
+      } else if (e.code == 'user-disabled') {
+        errorMsg = 'This account has been disabled.';
+      } else {
+        errorMsg = 'Sign in failed: ${e.message}';
+      }
+
+      setState(() {
+        _success = false;
+        _initialState = false;
+        _userEmail = errorMsg;
+      });
     } catch (e) {
       setState(() {
         _success = false;
         _initialState = false;
+        _userEmail = 'An unexpected error occurred. Please try again.';
       });
     }
   }
@@ -257,7 +297,7 @@ class _EmailPasswordFormState extends State<EmailPasswordForm> {
                   ? 'Please sign in'
                   : _success
                   ? 'Successfully signed in $_userEmail'
-                  : 'Sign in failed',
+                  : _userEmail,
               style: TextStyle(color: _success ? Colors.green : Colors.red),
             ),
           ),
