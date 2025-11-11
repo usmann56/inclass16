@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../main.dart';
 
 class ProfileScreen extends StatefulWidget {
   final User user;
@@ -47,6 +48,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Future<void> _logout() async {
+    await FirebaseAuth.instance.signOut();
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => MyHomePage(title: 'Firebase Auth Demo'),
+        ),
+        (Route<dynamic> route) => false,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,10 +68,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              Navigator.of(context).popUntil((route) => route.isFirst);
-            },
+            tooltip: 'Logout',
+            onPressed: _logout,
           ),
         ],
       ),
@@ -132,6 +143,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ],
                     ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 40),
+              ElevatedButton.icon(
+                onPressed: _logout,
+                icon: const Icon(Icons.exit_to_app),
+                label: const Text('Logout'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
