@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
+import './screens/profile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +35,19 @@ class _MyHomePageState extends State<MyHomePage> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text('Signed out successfully')));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final user = _auth.currentUser;
+    if (user != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => ProfileScreen(user: user)),
+        );
+      });
+    }
   }
 
   @override
@@ -168,15 +182,21 @@ class _EmailPasswordFormState extends State<EmailPasswordForm> {
   String _userEmail = '';
   void _signInWithEmailAndPassword() async {
     try {
-      await widget.auth.signInWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
+      UserCredential userCredential = await widget.auth
+          .signInWithEmailAndPassword(
+            email: _emailController.text,
+            password: _passwordController.text,
+          );
       setState(() {
         _success = true;
         _userEmail = _emailController.text;
         _initialState = false;
       });
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ProfileScreen(user: userCredential.user!),
+        ),
+      );
     } catch (e) {
       setState(() {
         _success = false;
