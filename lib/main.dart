@@ -45,30 +45,77 @@ class _MyHomePageState extends State<MyHomePage> {
       print(value);
     });
     FirebaseMessaging.onMessage.listen((RemoteMessage event) {
-      print("message recieved");
-      print(event.notification!.body);
-      print(event.data.keys);
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Notification"),
-            content: Text(event.notification!.body!),
-            actions: [
-              TextButton(
-                child: Text("Ok"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
+      final type = event.data['type'];
+      final category = event.data['category'];
+      final message = event.notification?.body ?? "No message";
+      final notificationTitle = event.notification?.title ?? "No title";
+
+      _showCustomNotificationDialog(
+        context,
+        type,
+        category,
+        message,
+        notificationTitle,
       );
     });
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
       print('Message clicked!');
     });
+  }
+
+  void _showCustomNotificationDialog(
+    BuildContext context,
+    String type,
+    String category,
+    String message,
+    String notificationTitle,
+  ) {
+    Color bgColor = Colors.grey.shade200;
+    IconData icon = Icons.message;
+
+    switch (type) {
+      case "important":
+        bgColor = Colors.red.shade100;
+        icon = Icons.warning;
+        break;
+
+      case "motivational":
+        bgColor = Colors.blue.shade100;
+        icon = Icons.emoji_events; // trophy icon
+        break;
+
+      case "wisdom":
+        bgColor = Colors.purple.shade100;
+        icon = Icons.lightbulb;
+        break;
+
+      case "regular":
+      default:
+        bgColor = Colors.grey.shade200;
+        icon = Icons.message;
+    }
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: bgColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: Row(
+          children: [
+            Icon(icon, size: 28),
+            const SizedBox(width: 10),
+            Text(notificationTitle.toUpperCase()),
+          ],
+        ),
+        content: Text(message, style: TextStyle(fontSize: 16)),
+        actions: [
+          TextButton(
+            child: Text("OK"),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
