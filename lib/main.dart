@@ -45,8 +45,8 @@ class _MyHomePageState extends State<MyHomePage> {
       print(value);
     });
     FirebaseMessaging.onMessage.listen((RemoteMessage event) {
-      final type = event.data['type'];
-      final category = event.data['category'];
+      final type = event.data['type'] ?? "regular";
+      final category = event.data['category'] ?? '';
       final message = event.notification?.body ?? "No message";
       final notificationTitle = event.notification?.title ?? "No title";
 
@@ -93,6 +93,23 @@ class _MyHomePageState extends State<MyHomePage> {
       default:
         bgColor = Colors.grey.shade200;
         icon = Icons.message;
+    }
+
+    switch (category) {
+      case "funny":
+        bgColor = Colors.yellow.shade200;
+        icon = Icons.emoji_emotions;
+        break;
+
+      case "love":
+        bgColor = Colors.red.shade200;
+        icon = Icons.favorite;
+        break;
+
+      case "success":
+        bgColor = Colors.green.shade200;
+        icon = Icons.stars;
+        break;
     }
 
     showDialog(
