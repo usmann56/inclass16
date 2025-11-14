@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'firebase_options.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 Future<void> _messageHandler(RemoteMessage message) async {
   print('background message ${message.notification!.body}');
@@ -63,6 +64,26 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future<void> playNotificationSound(String type) async {
+    final player = AudioPlayer();
+
+    String soundFile = 'important.mp3';
+
+    switch (type) {
+      case "important":
+        soundFile = "important.mp3";
+        break;
+      case "motivational":
+        soundFile = "motivational.mp3";
+        break;
+      case "wisdom":
+        soundFile = "wisdom.mp3";
+        break;
+    }
+
+    await player.play(AssetSource("sound/$soundFile"));
+  }
+
   void _showCustomNotificationDialog(
     BuildContext context,
     String type,
@@ -75,6 +96,10 @@ class _MyHomePageState extends State<MyHomePage> {
     Curve animationCurve = Curves.easeInOut;
     double scaleFactor = 1.0;
     bool typeHandled = false;
+
+    print(1);
+    playNotificationSound(type);
+    print(2);
 
     String? getFontForType(String type) {
       switch (type) {
